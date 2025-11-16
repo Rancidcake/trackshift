@@ -7,7 +7,7 @@ set -e
 # Configuration
 PROJECT_ID=${1:-pitlinkpqc}
 ZONE=${2:-us-central1-a}
-REPO_URL=${3:-"https://github.com/yourusername/PitlinkPQC.git"}
+REPO_URL=${3:-"https://github.com/Rancidcake/PitlinkPQC1.git"}
 INSTANCE_TYPE=${4:-e2-medium}
 
 # Colors
@@ -29,16 +29,30 @@ echo ""
 # Set project
 gcloud config set project $PROJECT_ID
 
-# Create instances
-echo -e "${YELLOW}📦 Creating VM instances...${NC}"
-gcloud compute instances create pitlink-server pitlink-client \
-  --zone=$ZONE \
-  --machine-type=$INSTANCE_TYPE \
-  --image-family=ubuntu-2204-lts \
-  --image-project=ubuntu-os-cloud \
-  --boot-disk-size=20GB \
-  --tags=pitlink-server,pitlink-client \
-  --metadata=startup-script='#!/bin/bash
+# Check if instances exist
+echo -e "${YELLOW}🔍 Checking for existing instances...${NC}"
+SERVER_EXISTS=$(gcloud compute instances describe pitlink-server --zone=$ZONE --format="value(name)" 2>/dev/null || echo "")
+CLIENT_EXISTS=$(gcloud compute instances describe pitlink-client --zone=$ZONE --format="value(name)" 2>/dev/null || echo "")
+
+if [ -n "$SERVER_EXISTS" ] || [ -n "$CLIENT_EXISTS" ]; then
+    echo -e "${YELLOW}⚠️  Instances already exist. Skipping creation...${NC}"
+    if [ -n "$SERVER_EXISTS" ]; then
+        echo "   ✓ pitlink-server exists"
+    fi
+    if [ -n "$CLIENT_EXISTS" ]; then
+        echo "   ✓ pitlink-client exists"
+    fi
+else
+    # Create instances
+    echo -e "${YELLOW}📦 Creating VM instances...${NC}"
+    gcloud compute instances create pitlink-server pitlink-client \
+      --zone=$ZONE \
+      --machine-type=$INSTANCE_TYPE \
+      --image-family=ubuntu-2204-lts \
+      --image-project=ubuntu-os-cloud \
+      --boot-disk-size=20GB \
+      --tags=pitlink-server,pitlink-client \
+      --metadata=startup-script='#!/bin/bash
 apt-get update
 apt-get install -y curl build-essential git nodejs npm pkg-config libssl-dev openssl
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -46,6 +60,7 @@ apt-get install -y nodejs
 curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source $HOME/.cargo/env
 rustup default stable'
+fi
 
 # Wait for instances
 echo -e "${YELLOW}⏳ Waiting for instances to be ready...${NC}"
@@ -71,8 +86,23 @@ echo ""
 echo -e "${YELLOW}🚀 Deploying server...${NC}"
 gcloud compute ssh pitlink-server --zone=$ZONE --command="
 cd ~ &&
-git clone $REPO_URL PitlinkPQC 2>/dev/null || (cd PitlinkPQC && git pull) &&
-cd PitlinkPQC &&
+if [ ! -d PitlinkPQC ]; then
+  git clone --recurse-submodules $REPO_URL PitlinkPQC || git clone $REPO_URL PitlinkPQC
+  cd PitlinkPQC
+  git submodule update --init --recursive 2>/dev/null || true
+  # Clone brain if it doesn't exist (it's a separate repo)
+  if [ ! -d brain/.git ]; then
+    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
+  fi
+else
+  cd PitlinkPQC
+  git pull
+  git submodule update --init --recursive 2>/dev/null || true
+  # Clone brain if it doesn't exist
+  if [ ! -d brain/.git ]; then
+    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
+  fi
+fi &&
 chmod +x deploy_server.sh &&
 ./deploy_server.sh
 " --quiet
@@ -84,8 +114,23 @@ sleep 10
 echo -e "${YELLOW}💻 Deploying client...${NC}"
 gcloud compute ssh pitlink-client --zone=$ZONE --command="
 cd ~ &&
-git clone $REPO_URL PitlinkPQC 2>/dev/null || (cd PitlinkPQC && git pull) &&
-cd PitlinkPQC &&
+if [ ! -d PitlinkPQC ]; then
+  git clone --recurse-submodules $REPO_URL PitlinkPQC || git clone $REPO_URL PitlinkPQC
+  cd PitlinkPQC
+  git submodule update --init --recursive 2>/dev/null || true
+  # Clone brain if it doesn't exist (it's a separate repo)
+  if [ ! -d brain/.git ]; then
+    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
+  fi
+else
+  cd PitlinkPQC
+  git pull
+  git submodule update --init --recursive 2>/dev/null || true
+  # Clone brain if it doesn't exist
+  if [ ! -d brain/.git ]; then
+    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
+  fi
+fi &&
 chmod +x deploy_client.sh &&
 SERVER_IP=$SERVER_IP ./deploy_client.sh
 " --quiet
