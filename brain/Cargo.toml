@@ -1,0 +1,67 @@
+[package]
+name = "trackshift"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "trackshift"
+path = "src/main.rs"
+
+[dependencies]
+ort = { version = "2.0.0-rc.10", features = ["ndarray"] }
+ndarray = "0.15"
+thiserror = "1.0"
+anyhow = "1.0"
+parking_lot = "0.12"
+lz4_flex = "0.11"
+zstd = "0.13"
+quic_fec = { path = "../quic_fec" }
+common = { path = "../common" }
+bytes = "1.5"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.dev]
+opt-level = 1
+
+[profile.test]
+opt-level = 1
+
+# Note: base64ct dependency issue - see SETUP.md for solutions
+# The fix_base64ct.ps1 script patches the downloaded base64ct to use edition 2021
+
+[dev-dependencies]
+
+[[example]]
+name = "patchy_network_example"
+path = "examples/patchy_network_example.rs"
+
+[[example]]
+name = "integrated_workflow"
+path = "examples/integrated_workflow.rs"
+
+[[example]]
+name = "priority_scheduler"
+path = "examples/priority_scheduler_example.rs"
+
+[[example]]
+name = "unified_transport"
+path = "examples/unified_transport.rs"
+
+[[example]]
+name = "latency_benchmark"
+path = "examples/latency_benchmark.rs"
+
+[[example]]
+name = "full_latency_measurement"
+path = "examples/full_latency_measurement.rs"
+
+[[example]]
+name = "rl_demo"
+path = "examples/rl_demo.rs"
+
+[[example]]
+name = "system_benchmark"
+path = "examples/system_benchmark.rs"
+

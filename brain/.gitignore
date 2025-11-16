@@ -1,0 +1,28 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model files (large, should be downloaded separately)
+models/*.onnx
+!models/.gitkeep
+
+# Logs
+*.log
+
+# Temporary files
+verify_code.*
+*.pdb
+*.rcgu.o
+
