@@ -7,7 +7,7 @@ set -e
 # Configuration
 PROJECT_ID=${1:-pitlinkpqc}
 ZONE=${2:-us-central1-a}
-REPO_URL=${3:-"https://github.com/Rancidcake/PitlinkPQC1.git"}
+REPO_URL=${3:-"https://github.com/Rancidcake/trackshift.git"}
 INSTANCE_TYPE=${4:-e2-medium}
 
 # Colors
@@ -90,18 +90,41 @@ if [ ! -d PitlinkPQC ]; then
   git clone --recurse-submodules $REPO_URL PitlinkPQC || git clone $REPO_URL PitlinkPQC
   cd PitlinkPQC
   git submodule update --init --recursive 2>/dev/null || true
-  # Clone brain if it doesn't exist (it's a separate repo)
-  if [ ! -d brain/.git ]; then
-    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
-  fi
+  # brain is already in trackshift repo, no need to clone separately
 else
   cd PitlinkPQC
   git pull
   git submodule update --init --recursive 2>/dev/null || true
   # Clone brain if it doesn't exist
   if [ ! -d brain/.git ]; then
-    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
+    git clone https://github.com/Rancidcake/trackshift.git brain 2>/dev/null || echo 'Warning: Could not clone trackshift repository'
   fi
+fi &&
+# Fix compilation errors in trackshift
+if [ -d brain ] && [ -f brain/src/telemetry_ai/mod.rs ]; then
+  echo '🔧 Fixing trackshift compilation errors...'
+  # Fix ORT imports - replace the old import line
+  sed -i 's/use ort::{Session, SessionBuilder, Value};/use ort::session::{Session, SessionInputValue};\nuse ort::session::builder::SessionBuilder;\nuse ort::value::Value;/' brain/src/telemetry_ai/mod.rs
+  # Ensure std::sync::Arc is imported
+  if ! grep -q 'use std::sync::Arc;' brain/src/telemetry_ai/mod.rs; then
+    sed -i '1a use std::sync::Arc;' brain/src/telemetry_ai/mod.rs
+  fi
+  # Ensure anyhow::Context and Result are imported
+  if ! grep -q 'use anyhow::Context;' brain/src/telemetry_ai/mod.rs; then
+    sed -i '/use anyhow::/a use anyhow::Context;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Context;' brain/src/telemetry_ai/mod.rs
+  fi
+  if ! grep -q 'use anyhow::Result;' brain/src/telemetry_ai/mod.rs; then
+    sed -i '/use anyhow::/a use anyhow::Result;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Result;' brain/src/telemetry_ai/mod.rs
+  fi
+  # Fix SessionBuilder method - try commit_from_file or commit_from_memory
+  sed -i 's/\.with_model_from_file(/\.commit_from_file(/' brain/src/telemetry_ai/mod.rs || sed -i 's/\.with_model_from_file(/\.commit_from_memory(/' brain/src/telemetry_ai/mod.rs || true
+  # Fix type ambiguity
+  sed -i 's/let mut score = 1\.0;/let mut score: f32 = 1.0;/' brain/src/telemetry_ai/network_quality.rs
+  sed -i 's/score = score\.max(0\.0)\.min(1\.0);/score = score.max(0.0_f32).min(1.0_f32);/' brain/src/telemetry_ai/network_quality.rs
+  # Fix file_size comparisons
+  sed -i 's/file_size > 100_000_000\.0/file_size > 100_000_000/g' brain/src/telemetry_ai/mod.rs
+  sed -i 's/file_size > 10_000_000\.0/file_size > 10_000_000/g' brain/src/telemetry_ai/mod.rs
+  echo '✅ Fixes applied'
 fi &&
 chmod +x deploy_server.sh &&
 ./deploy_server.sh
@@ -118,18 +141,35 @@ if [ ! -d PitlinkPQC ]; then
   git clone --recurse-submodules $REPO_URL PitlinkPQC || git clone $REPO_URL PitlinkPQC
   cd PitlinkPQC
   git submodule update --init --recursive 2>/dev/null || true
-  # Clone brain if it doesn't exist (it's a separate repo)
-  if [ ! -d brain/.git ]; then
-    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
-  fi
+  # brain is already in trackshift repo, no need to clone separately
 else
   cd PitlinkPQC
   git pull
   git submodule update --init --recursive 2>/dev/null || true
   # Clone brain if it doesn't exist
   if [ ! -d brain/.git ]; then
-    git clone https://github.com/mardromus/brain.git brain 2>/dev/null || echo 'Warning: Could not clone brain repository'
+    git clone https://github.com/Rancidcake/trackshift.git brain 2>/dev/null || echo 'Warning: Could not clone trackshift repository'
   fi
+fi &&
+# Fix compilation errors in trackshift (if needed for client build)
+if [ -d brain ] && [ -f brain/src/telemetry_ai/mod.rs ]; then
+  echo '🔧 Fixing trackshift compilation errors...'
+  sed -i 's/use ort::{Session, SessionBuilder, Value};/use ort::session::{Session, SessionInputValue};\nuse ort::session::builder::SessionBuilder;\nuse ort::value::Value;/' brain/src/telemetry_ai/mod.rs
+  if ! grep -q 'use std::sync::Arc;' brain/src/telemetry_ai/mod.rs; then
+    sed -i '1a use std::sync::Arc;' brain/src/telemetry_ai/mod.rs
+  fi
+  if ! grep -q 'use anyhow::Context;' brain/src/telemetry_ai/mod.rs; then
+    sed -i '/use anyhow::/a use anyhow::Context;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Context;' brain/src/telemetry_ai/mod.rs
+  fi
+  if ! grep -q 'use anyhow::Result;' brain/src/telemetry_ai/mod.rs; then
+    sed -i '/use anyhow::/a use anyhow::Result;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Result;' brain/src/telemetry_ai/mod.rs
+  fi
+  sed -i 's/\.with_model_from_file(/\.commit_from_file(/' brain/src/telemetry_ai/mod.rs || true
+  sed -i 's/let mut score = 1\.0;/let mut score: f32 = 1.0;/' brain/src/telemetry_ai/network_quality.rs
+  sed -i 's/score = score\.max(0\.0)\.min(1\.0);/score = score.max(0.0_f32).min(1.0_f32);/' brain/src/telemetry_ai/network_quality.rs
+  sed -i 's/file_size > 100_000_000\.0/file_size > 100_000_000/g' brain/src/telemetry_ai/mod.rs
+  sed -i 's/file_size > 10_000_000\.0/file_size > 10_000_000/g' brain/src/telemetry_ai/mod.rs
+  echo '✅ Fixes applied'
 fi &&
 chmod +x deploy_client.sh &&
 SERVER_IP=$SERVER_IP ./deploy_client.sh
