@@ -4,6 +4,7 @@ use ort::session::builder::SessionBuilder;
 use ort::value::Value;
 use std::sync::Arc;
 use anyhow::{Result, Context};
+use serde::{Serialize, Deserialize};
 
 mod vector_store;
 mod network_quality;
@@ -15,7 +16,7 @@ mod reinforcement_learning;
 mod rl_integration;
 
 use vector_store::SimpleVectorStore;
-use network_quality::{NetworkQuality, NetworkAction};
+pub use network_quality::{NetworkQuality, NetworkAction};
 pub use buffer::{TelemetryBuffer, BufferedChunk, BufferStatus};
 pub use priority_tagger::{PriorityTagger, ChunkPriority, DataFormat, DataScenario};
 pub use scheduler::{PriorityScheduler, ScheduledChunk, SchedulerStats};
@@ -198,7 +199,7 @@ impl From<u32> for Severity {
 }
 
 /// Transfer status for real-time monitoring
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TransferStatus {
     Pending = 0,       // Waiting to start
     InProgress = 1,    // Actively transferring
@@ -224,7 +225,7 @@ impl From<u32> for TransferStatus {
 }
 
 /// Integrity check method
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum IntegrityMethod {
     None = 0,          // No integrity check
     Checksum = 1,      // Simple checksum (fast)

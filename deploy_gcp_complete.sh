@@ -103,27 +103,35 @@ fi &&
 # Fix compilation errors in trackshift
 if [ -d brain ] && [ -f brain/src/telemetry_ai/mod.rs ]; then
   echo '🔧 Fixing trackshift compilation errors...'
-  # Fix ORT imports - replace the old import line
-  sed -i 's/use ort::{Session, SessionBuilder, Value};/use ort::session::{Session, SessionInputValue};\nuse ort::session::builder::SessionBuilder;\nuse ort::value::Value;/' brain/src/telemetry_ai/mod.rs
-  # Ensure std::sync::Arc is imported
-  if ! grep -q 'use std::sync::Arc;' brain/src/telemetry_ai/mod.rs; then
-    sed -i '1a use std::sync::Arc;' brain/src/telemetry_ai/mod.rs
+  # Use Python fix script if available (most reliable), otherwise bash script, then inline
+  if command -v python3 &> /dev/null && [ -f fix_trackshift_python.py ]; then
+    python3 fix_trackshift_python.py brain
+  elif [ -f fix_trackshift_comprehensive.sh ]; then
+    chmod +x fix_trackshift_comprehensive.sh
+    ./fix_trackshift_comprehensive.sh brain
+  else
+    cd brain/src/telemetry_ai
+    # Fix ORT imports
+    sed -i 's/use ort::{Session, SessionBuilder, Value};/use ort::session::Session;\nuse ort::session::builder::SessionBuilder;\nuse ort::value::Value;/' mod.rs
+    # Add imports at top
+    if ! grep -q '^use std::sync::Arc;' mod.rs; then sed -i '1i use std::sync::Arc;' mod.rs; fi
+    if ! grep -q 'use anyhow::Context' mod.rs; then sed -i '/^use anyhow::/a use anyhow::Context;' mod.rs || sed -i '1i use anyhow::Context;' mod.rs; fi
+    if ! grep -q 'use anyhow::Result' mod.rs; then sed -i '/^use anyhow::/a use anyhow::Result;' mod.rs || sed -i '1i use anyhow::Result;' mod.rs; fi
+    # Replace Result types
+    sed -i 's/-> Result</-> anyhow::Result</g' mod.rs
+    sed -i 's/) -> Result</) -> anyhow::Result</g' mod.rs
+    # Fix SessionBuilder - commit_from_file returns Result, use ? directly instead of .context()?
+    sed -i '/\.commit_from_file(.*)/{N;s/\n[[:space:]]*\.context(.*)?;//;}' mod.rs || true
+    # Fix network_quality
+    if [ -f network_quality.rs ]; then
+      sed -i 's/let mut score = 1\.0;/let mut score: f32 = 1.0;/' network_quality.rs
+      sed -i 's/score = score\.max(0\.0)\.min(1\.0);/score = score.max(0.0_f32).min(1.0_f32);/' network_quality.rs
+    fi
+    # Fix file_size
+    sed -i 's/file_size > 100_000_000\.0/file_size > 100_000_000/g' mod.rs
+    sed -i 's/file_size > 10_000_000\.0/file_size > 10_000_000/g' mod.rs
+    cd ../../..
   fi
-  # Ensure anyhow::Context and Result are imported
-  if ! grep -q 'use anyhow::Context;' brain/src/telemetry_ai/mod.rs; then
-    sed -i '/use anyhow::/a use anyhow::Context;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Context;' brain/src/telemetry_ai/mod.rs
-  fi
-  if ! grep -q 'use anyhow::Result;' brain/src/telemetry_ai/mod.rs; then
-    sed -i '/use anyhow::/a use anyhow::Result;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Result;' brain/src/telemetry_ai/mod.rs
-  fi
-  # Fix SessionBuilder method - try commit_from_file or commit_from_memory
-  sed -i 's/\.with_model_from_file(/\.commit_from_file(/' brain/src/telemetry_ai/mod.rs || sed -i 's/\.with_model_from_file(/\.commit_from_memory(/' brain/src/telemetry_ai/mod.rs || true
-  # Fix type ambiguity
-  sed -i 's/let mut score = 1\.0;/let mut score: f32 = 1.0;/' brain/src/telemetry_ai/network_quality.rs
-  sed -i 's/score = score\.max(0\.0)\.min(1\.0);/score = score.max(0.0_f32).min(1.0_f32);/' brain/src/telemetry_ai/network_quality.rs
-  # Fix file_size comparisons
-  sed -i 's/file_size > 100_000_000\.0/file_size > 100_000_000/g' brain/src/telemetry_ai/mod.rs
-  sed -i 's/file_size > 10_000_000\.0/file_size > 10_000_000/g' brain/src/telemetry_ai/mod.rs
   echo '✅ Fixes applied'
 fi &&
 chmod +x deploy_server.sh &&
@@ -154,21 +162,28 @@ fi &&
 # Fix compilation errors in trackshift (if needed for client build)
 if [ -d brain ] && [ -f brain/src/telemetry_ai/mod.rs ]; then
   echo '🔧 Fixing trackshift compilation errors...'
-  sed -i 's/use ort::{Session, SessionBuilder, Value};/use ort::session::{Session, SessionInputValue};\nuse ort::session::builder::SessionBuilder;\nuse ort::value::Value;/' brain/src/telemetry_ai/mod.rs
-  if ! grep -q 'use std::sync::Arc;' brain/src/telemetry_ai/mod.rs; then
-    sed -i '1a use std::sync::Arc;' brain/src/telemetry_ai/mod.rs
+  if command -v python3 &> /dev/null && [ -f fix_trackshift_python.py ]; then
+    python3 fix_trackshift_python.py brain
+  elif [ -f fix_trackshift_comprehensive.sh ]; then
+    chmod +x fix_trackshift_comprehensive.sh
+    ./fix_trackshift_comprehensive.sh brain
+  else
+    cd brain/src/telemetry_ai
+    sed -i 's/use ort::{Session, SessionBuilder, Value};/use ort::session::Session;\nuse ort::session::builder::SessionBuilder;\nuse ort::value::Value;/' mod.rs
+    if ! grep -q '^use std::sync::Arc;' mod.rs; then sed -i '1i use std::sync::Arc;' mod.rs; fi
+    if ! grep -q 'use anyhow::Context' mod.rs; then sed -i '/^use anyhow::/a use anyhow::Context;' mod.rs || sed -i '1i use anyhow::Context;' mod.rs; fi
+    if ! grep -q 'use anyhow::Result' mod.rs; then sed -i '/^use anyhow::/a use anyhow::Result;' mod.rs || sed -i '1i use anyhow::Result;' mod.rs; fi
+    sed -i 's/-> Result</-> anyhow::Result</g' mod.rs
+    sed -i 's/) -> Result</) -> anyhow::Result</g' mod.rs
+    sed -i '/\.commit_from_file(.*)/{N;s/\n[[:space:]]*\.context(.*)?;//;}' mod.rs || true
+    if [ -f network_quality.rs ]; then
+      sed -i 's/let mut score = 1\.0;/let mut score: f32 = 1.0;/' network_quality.rs
+      sed -i 's/score = score\.max(0\.0)\.min(1\.0);/score = score.max(0.0_f32).min(1.0_f32);/' network_quality.rs
+    fi
+    sed -i 's/file_size > 100_000_000\.0/file_size > 100_000_000/g' mod.rs
+    sed -i 's/file_size > 10_000_000\.0/file_size > 10_000_000/g' mod.rs
+    cd ../../..
   fi
-  if ! grep -q 'use anyhow::Context;' brain/src/telemetry_ai/mod.rs; then
-    sed -i '/use anyhow::/a use anyhow::Context;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Context;' brain/src/telemetry_ai/mod.rs
-  fi
-  if ! grep -q 'use anyhow::Result;' brain/src/telemetry_ai/mod.rs; then
-    sed -i '/use anyhow::/a use anyhow::Result;' brain/src/telemetry_ai/mod.rs || sed -i '1a use anyhow::Result;' brain/src/telemetry_ai/mod.rs
-  fi
-  sed -i 's/\.with_model_from_file(/\.commit_from_file(/' brain/src/telemetry_ai/mod.rs || true
-  sed -i 's/let mut score = 1\.0;/let mut score: f32 = 1.0;/' brain/src/telemetry_ai/network_quality.rs
-  sed -i 's/score = score\.max(0\.0)\.min(1\.0);/score = score.max(0.0_f32).min(1.0_f32);/' brain/src/telemetry_ai/network_quality.rs
-  sed -i 's/file_size > 100_000_000\.0/file_size > 100_000_000/g' brain/src/telemetry_ai/mod.rs
-  sed -i 's/file_size > 10_000_000\.0/file_size > 10_000_000/g' brain/src/telemetry_ai/mod.rs
   echo '✅ Fixes applied'
 fi &&
 chmod +x deploy_client.sh &&

@@ -3,7 +3,11 @@
 use actix_web::{web, HttpResponse, Result as ActixResult};
 use serde::{Deserialize, Serialize};
 use crate::state::DashboardState;
-use trackshift::*;
+use trackshift::{
+    TransferStatus, AiDecision, RouteDecision, Severity, OptimizationHint,
+    RetryStrategy, IntegrityMethod, TransferAction, NetworkQuality, NetworkMetricsInput,
+    ChunkPriority,
+};
 use std::sync::Arc;
 
 /// Get system status snapshot
@@ -263,11 +267,35 @@ pub async fn config_update(
     state.update_config(config.clone());
     
     // Update scheduler weights
-    let mut decision = AiDecision::default();
-    decision.wfq_p0_weight = config.p0_weight;
-    decision.wfq_p1_weight = config.p1_weight;
-    decision.wfq_p2_weight = config.p2_weight;
-    decision.p2_enable = config.p2_enabled;
+    // Create a minimal AiDecision for weight updates
+    // We only need the weight fields, but must provide all required fields
+    use trackshift::NetworkQuality;
+    let default_metrics = NetworkMetricsInput::default();
+    let network_quality = NetworkQuality::assess(&default_metrics);
+    
+    let decision = AiDecision {
+        route: RouteDecision::WiFi,
+        severity: Severity::Low,
+        p2_enable: config.p2_enabled,
+        congestion_predicted: false,
+        wfq_p0_weight: config.p0_weight,
+        wfq_p1_weight: config.p1_weight,
+        wfq_p2_weight: config.p2_weight,
+        should_send: true,
+        similarity_score: 0.0,
+        optimization_hint: OptimizationHint::SendFull,
+        network_quality,
+        should_buffer: false,
+        retry_strategy: RetryStrategy::Exponential,
+        recommended_chunk_size: 64 * 1024,
+        enable_parallel_transfer: false,
+        parallel_streams: 1,
+        integrity_method: IntegrityMethod::Blake3,
+        verify_after_transfer: true,
+        transfer_status: TransferStatus::Pending,
+        estimated_completion_time: 0.0,
+        transfer_action: TransferAction::Continue,
+    };
     state.scheduler.update_weights(&decision);
     
     Ok(HttpResponse::Ok().json(serde_json::json!({

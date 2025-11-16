@@ -11,9 +11,10 @@
 
 use crate::telemetry_ai::Severity;
 use anyhow::Result;
+use serde::{Serialize, Deserialize};
 
 /// Priority levels for telemetry chunks
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ChunkPriority {
     Critical = 0,   // Emergency, immediate action required
     High = 64,      // Important, time-sensitive

@@ -16,9 +16,10 @@ use parking_lot::RwLock;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH, Duration};
 use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 
 /// Real-time transfer status
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransferStatusInfo {
     pub transfer_id: String,
     pub status: TransferStatus,
@@ -38,7 +39,7 @@ pub struct TransferStatusInfo {
 }
 
 /// Integrity check status
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum IntegrityCheckStatus {
     NotStarted,
     InProgress,
@@ -48,7 +49,7 @@ pub enum IntegrityCheckStatus {
 }
 
 /// Network status snapshot
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NetworkStatus {
     pub rtt_ms: f32,
     pub jitter_ms: f32,
@@ -62,7 +63,7 @@ pub struct NetworkStatus {
 }
 
 /// System health status
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SystemHealth {
     pub cpu_usage: f32,  // 0.0 - 1.0
     pub memory_usage: f32,  // 0.0 - 1.0
@@ -338,7 +339,7 @@ impl Default for RealtimeStatusMonitor {
 }
 
 /// Comprehensive status snapshot
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatusSnapshot {
     pub transfers: Vec<TransferStatusInfo>,
     pub network: Option<NetworkStatus>,
@@ -347,7 +348,7 @@ pub struct StatusSnapshot {
 }
 
 /// Scheduler status snapshot
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SchedulerStatusSnapshot {
     pub critical_queue: usize,
     pub high_queue: usize,

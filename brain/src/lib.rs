@@ -9,7 +9,8 @@ pub use telemetry_ai::{
     PriorityTagger, ChunkPriority, DataFormat, DataScenario,
     PriorityScheduler, ScheduledChunk, SchedulerStats,
     RealtimeStatusMonitor, TransferStatusInfo, NetworkStatus, SystemHealth,
-    StatusSnapshot, IntegrityCheckStatus, IntegrityMethod,
+    StatusSnapshot, IntegrityCheckStatus, IntegrityMethod, TransferStatus,
+    TransferAction, NetworkQuality,
 };
 
 // Re-export integration types
