@@ -17,7 +17,7 @@ use std::time::{Instant, Duration};
 use common::blake3_hash;
 use lz4_flex::decompress;
 
-use crate::packet::{QuicFecPacket, PacketHeader, PacketType};
+use crate::packet::{QuicFecPacket, PacketType};
 use crate::fec_enhanced::{EnhancedFecDecoder, FecBlockInfo, FecAlgorithm};
 
 /// Stream reassembly state
@@ -156,7 +156,7 @@ impl QuicReceiver {
     }
 
     /// Process FEC-recovered block
-    fn process_recovered_block(&self, block_data: Bytes, block_id: u64) -> Result<Option<Bytes>> {
+    fn process_recovered_block(&self, block_data: Bytes, _block_id: u64) -> Result<Option<Bytes>> {
         // The recovered block might contain multiple packets
         // For simplicity, treat it as a single packet
         // In production, you'd parse the block structure
@@ -259,7 +259,7 @@ impl QuicReceiver {
                 stats.total_bytes_decompressed += decompressed.len() as u64;
                 Ok(Some(Bytes::from(decompressed)))
             }
-            Err(e) => {
+            Err(_e) => {
                 // If decompression fails, might not be compressed
                 // Return original data
                 self.stats.write().decompression_failures += 1;

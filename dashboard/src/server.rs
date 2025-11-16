@@ -10,18 +10,32 @@ use std::sync::Arc;
 use anyhow::Result;
 use crate::api::create_api_router;
 use crate::metrics::MetricsCollector;
+use crate::control::DashboardController;
+use quic_fec::FallbackManager;
 
 /// Dashboard server
 pub struct DashboardServer {
     collector: Arc<MetricsCollector>,
+    controller: Arc<DashboardController>,
     port: u16,
 }
 
 impl DashboardServer {
     /// Create a new dashboard server
     pub fn new(port: u16) -> Self {
+        // Create fallback manager
+        let fallback_manager = Arc::new(
+            FallbackManager::new(quic_fec::FallbackStrategy::Automatic)
+        );
+        
+        // Create controller
+        let controller = Arc::new(
+            DashboardController::new(fallback_manager)
+        );
+        
         Self {
             collector: Arc::new(MetricsCollector::new(1000)),
+            controller,
             port,
         }
     }
@@ -29,6 +43,11 @@ impl DashboardServer {
     /// Get metrics collector reference
     pub fn collector(&self) -> Arc<MetricsCollector> {
         self.collector.clone()
+    }
+
+    /// Get controller reference
+    pub fn controller(&self) -> Arc<DashboardController> {
+        self.controller.clone()
     }
 
     /// Start the dashboard server
@@ -49,7 +68,10 @@ impl DashboardServer {
     /// Create the Axum application
     fn create_app(&self) -> Router {
         // API routes
-        let api_router = create_api_router(self.collector.clone());
+        let api_router = create_api_router(
+            self.collector.clone(),
+            self.controller.clone(),
+        );
         
         // Main router
         Router::new()

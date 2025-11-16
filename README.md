@@ -18,15 +18,29 @@ A unified Rust workspace combining AI-powered telemetry analysis, post-quantum e
 See [INTEGRATION.md](INTEGRATION.md) for complete integration guide.
 
 ```bash
-# Build all components
+# 1. Generate ONNX models (first time only)
+python3 brain/scripts/create_onnx_models.py
+cp models/*.onnx brain/models/
+
+# 2. Build all components
 cargo build --release
 
-# Start the dashboard
-cargo run --bin dashboard
+# 3. Run demonstration
+cd brain
+cargo run --example priority_scheduler
 
-# Run integrated workflow example (once ORT API is fixed)
-cargo run --example unified_transport -p trackshift
+# 4. Or run other examples
+cargo run --example integrated_workflow
+cargo run --example patchy_network_example
 ```
+
+## 🚀 Deployment & Demonstration
+
+- **GCP Deployment**: [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md) - Google Cloud Platform deployment
+- **Market-Ready Deployment**: [MARKET_READY_DEPLOYMENT.md](MARKET_READY_DEPLOYMENT.md) - Production deployment guide
+- **Deployment Guide**: [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Complete deployment instructions
+- **Dashboard Guide**: [DASHBOARD_GUIDE.md](DASHBOARD_GUIDE.md) - Web dashboard usage
+- **Quick Demo**: [QUICK_DEMO.md](QUICK_DEMO.md) - 5-minute demonstration guide
 
 ## Integration Status
 

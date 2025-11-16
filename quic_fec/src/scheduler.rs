@@ -6,14 +6,14 @@
 use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use parking_lot::RwLock;
-use std::time::{Instant, Duration};
+use std::time::Instant;
 use bytes::Bytes;
-use anyhow::{Result, Context};
+use anyhow::Result;
 
-use crate::handover::{NetworkPath, PathMetrics};
+use crate::handover::NetworkPath;
 
 /// Packet priority levels
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize)]
 pub enum PacketPriority {
     /// Critical: Lowest latency, highest reliability
     Critical = 0,

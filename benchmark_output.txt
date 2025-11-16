@@ -1,0 +1,356 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /Users/mayankhete/trs/PitlinkPQC/rust_pqc/Cargo.toml
+workspace: /Users/mayankhete/trs/PitlinkPQC/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /Users/mayankhete/trs/PitlinkPQC/brain/Cargo.toml
+workspace: /Users/mayankhete/trs/PitlinkPQC/Cargo.toml
+warning: unused import: `crate::handover::NetworkPath`
+  --> quic_fec/src/fallback.rs:16:5
+   |
+16 | use crate::handover::NetworkPath;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `connection_config`
+   --> quic_fec/src/server.rs:150:9
+    |
+150 |         connection_config: ConnectionConfig,
+    |         ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_connection_config`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `total_chunks`
+   --> quic_fec/src/file_transfer.rs:217:25
+    |
+217 |         let (file_path, total_chunks, chunk_paths) = {
+    |                         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_total_chunks`
+
+warning: unused import: `AsyncWriteExt`
+  --> quic_fec/src/file_client.rs:12:31
+   |
+12 | use tokio::io::{AsyncReadExt, AsyncWriteExt};
+   |                               ^^^^^^^^^^^^^
+
+warning: unused import: `AsyncReadExt`
+  --> quic_fec/src/file_client.rs:12:17
+   |
+12 | use tokio::io::{AsyncReadExt, AsyncWriteExt};
+   |                 ^^^^^^^^^^^^
+
+warning: unused variable: `max_age_seconds`
+   --> quic_fec/src/fec_enhanced.rs:417:38
+    |
+417 |     pub fn cleanup_old_blocks(&self, max_age_seconds: u64) {
+    |                                      ^^^^^^^^^^^^^^^
+    |
+help: if this is intentional, prefix it with an underscore
+    |
+417 |     pub fn cleanup_old_blocks(&self, _max_age_seconds: u64) {
+    |                                      +
+help: you might have meant to pattern match on the similarly named constant `MONITORING_WINDOW_MS`
+    |
+417 -     pub fn cleanup_old_blocks(&self, max_age_seconds: u64) {
+417 +     pub fn cleanup_old_blocks(&self, handover_enhanced::MONITORING_WINDOW_MS: u64) {
+    |
+
+warning: fields `send_tx` and `recv_rx` are never read
+  --> quic_fec/src/connection.rs:63:5
+   |
+54 | pub struct QuicFecConnection {
+   |            ----------------- fields in this struct
+...
+63 |     send_tx: Option<mpsc::UnboundedSender<Bytes>>,
+   |     ^^^^^^^
+64 |     recv_rx: Option<mpsc::UnboundedReceiver<Bytes>>,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `strategy` is never read
+  --> quic_fec/src/handover.rs:98:5
+   |
+95 | pub struct HandoverManager {
+   |            --------------- field in this struct
+...
+98 |     strategy: HandoverStrategy,
+   |     ^^^^^^^^
+
+warning: field `config` is never read
+   --> quic_fec/src/fec_enhanced.rs:196:5
+    |
+194 | pub struct EnhancedFecDecoder {
+    |            ------------------ field in this struct
+195 |     algorithm: FecAlgorithm,
+196 |     config: FecConfig,
+    |     ^^^^^^
+
+warning: field `throughput_samples` is never read
+  --> quic_fec/src/handover_enhanced.rs:28:5
+   |
+25 | struct PathHistory {
+   |        ----------- field in this struct
+...
+28 |     throughput_samples: VecDeque<(Instant, f32)>,
+   |     ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `PathHistory` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: field `sent_at` is never read
+  --> quic_fec/src/handover_enhanced.rs:96:5
+   |
+92 | struct InFlightPacket {
+   |        -------------- field in this struct
+...
+96 |     sent_at: Instant,
+   |     ^^^^^^^
+   |
+   = note: `InFlightPacket` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: field `strategy` is never read
+   --> quic_fec/src/handover_enhanced.rs:104:5
+    |
+101 | pub struct EnhancedHandoverManager {
+    |            ----------------------- field in this struct
+...
+104 |     strategy: HandoverStrategy,
+    |     ^^^^^^^^
+
+warning: field `stream_id` is never read
+  --> quic_fec/src/receiver.rs:26:5
+   |
+25 | struct StreamState {
+   |        ----------- field in this struct
+26 |     stream_id: u64,
+   |     ^^^^^^^^^
+   |
+   = note: `StreamState` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: field `config` is never read
+  --> quic_fec/src/server.rs:26:5
+   |
+24 | pub struct QuicFecServer {
+   |            ------------- field in this struct
+25 |     endpoint: Endpoint,
+26 |     config: ServerConfig,
+   |     ^^^^^^
+
+warning: fields `transfer_queue` and `chunk_size` are never read
+  --> quic_fec/src/file_client.rs:69:5
+   |
+65 | pub struct FileTransferClient {
+   |            ------------------ fields in this struct
+...
+69 |     transfer_queue: Arc<RwLock<Vec<QueuedTransfer>>>,
+   |     ^^^^^^^^^^^^^^
+70 |     chunk_size: usize,
+   |     ^^^^^^^^^^
+
+warning: fields `transfer_id`, `file_path`, `remote_path`, `priority`, and `queued_at` are never read
+  --> quic_fec/src/file_client.rs:76:5
+   |
+75 | struct QueuedTransfer {
+   |        -------------- fields in this struct
+76 |     transfer_id: TransferId,
+   |     ^^^^^^^^^^^
+77 |     file_path: PathBuf,
+   |     ^^^^^^^^^
+78 |     remote_path: String,
+   |     ^^^^^^^^^^^
+79 |     priority: PacketPriority,
+   |     ^^^^^^^^
+80 |     queued_at: Instant,
+   |     ^^^^^^^^^
+   |
+   = note: `QueuedTransfer` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: `quic_fec` (lib) generated 16 warnings (run `cargo fix --lib -p quic_fec` to apply 2 suggestions)
+warning: unused import: `anyhow::Result`
+  --> brain/src/telemetry_ai/priority_tagger.rs:13:5
+   |
+13 | use anyhow::Result;
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `NetworkMetricsInput`
+ --> brain/src/telemetry_ai/scheduler.rs:9:27
+  |
+9 | use crate::telemetry_ai::{NetworkMetricsInput, AiDecision};
+  |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SchedulerStats`
+  --> brain/src/telemetry_ai/realtime_status.rs:12:24
+   |
+12 |     PriorityScheduler, SchedulerStats,
+   |                        ^^^^^^^^^^^^^^
+
+warning: unused import: `Duration`
+  --> brain/src/telemetry_ai/realtime_status.rs:17:41
+   |
+17 | use std::time::{SystemTime, UNIX_EPOCH, Duration};
+   |                                         ^^^^^^^^
+
+warning: unused import: `Duration`
+  --> brain/src/telemetry_ai/reinforcement_learning.rs:16:26
+   |
+16 | use std::time::{Instant, Duration};
+   |                          ^^^^^^^^
+
+warning: unused imports: `PathBuf` and `Path`
+  --> brain/src/integration.rs:11:17
+   |
+11 | use std::path::{Path, PathBuf};
+   |                 ^^^^  ^^^^^^^
+
+warning: unused import: `std::fs`
+  --> brain/src/integration.rs:12:5
+   |
+12 | use std::fs;
+   |     ^^^^^^^
+
+warning: unused import: `ProcessedChunk`
+  --> brain/src/transport.rs:10:55
+   |
+10 | use crate::integration::{IntegratedTelemetryPipeline, ProcessedChunk};
+   |                                                       ^^^^^^^^^^^^^^
+
+warning: unused variable: `transfer_time_secs`
+   --> brain/src/telemetry_ai/reinforcement_learning.rs:209:9
+    |
+209 |         transfer_time_secs: f32,
+    |         ^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_transfer_time_secs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `action`
+   --> brain/src/telemetry_ai/reinforcement_learning.rs:427:13
+    |
+427 |         for action in RLAction::all() {
+    |             ^^^^^^ help: if this is intentional, prefix it with an underscore: `_action`
+
+warning: unused variable: `action`
+   --> brain/src/telemetry_ai/reinforcement_learning.rs:460:47
+    |
+460 |     pub fn learn(&self, state: &NetworkState, action: RLAction, reward: f32) {
+    |                                               ^^^^^^ help: if this is intentional, prefix it with an underscore: `_action`
+
+warning: `trackshift` (lib) generated 11 warnings (run `cargo fix --lib -p trackshift` to apply 8 suggestions)
+   Compiling trackshift v0.1.0 (/Users/mayankhete/trs/PitlinkPQC/brain)
+warning: field `error_message` is never read
+  --> brain/examples/system_benchmark.rs:25:5
+   |
+13 | struct TestResult {
+   |        ---------- field in this struct
+...
+25 |     error_message: Option<String>,
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `TestResult` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `trackshift` (example "system_benchmark") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.99s
+     Running `target/debug/examples/system_benchmark`
+🚀 Starting Comprehensive System Benchmark
+==========================================
+
+✅ AI system initialized with models
+
+📋 Test Configuration:
+   Formats: 8
+   Network Conditions: 4
+   Total Test Cases: 32
+
+Testing JSON Small on Excellent network... ✓
+Testing JSON Small on Good network... ✓
+Testing JSON Small on Patchy network... ✓
+Testing JSON Small on Bad network... ✓
+Testing JSON Large on Excellent network... ✓
+Testing JSON Large on Good network... ✓
+Testing JSON Large on Patchy network... ✓
+Testing JSON Large on Bad network... ✓
+Testing Binary 1KB on Excellent network... ✓
+Testing Binary 1KB on Good network... ✓
+Testing Binary 1KB on Patchy network... ✓
+Testing Binary 1KB on Bad network... ✓
+Testing Binary 10KB on Excellent network... ✓
+Testing Binary 10KB on Good network... ✓
+Testing Binary 10KB on Patchy network... ✓
+Testing Binary 10KB on Bad network... ✓
+Testing Binary 100KB on Excellent network... ✓
+Testing Binary 100KB on Good network... ✓
+Testing Binary 100KB on Patchy network... ✓
+Testing Binary 100KB on Bad network... ✓
+Testing Text Log on Excellent network... ✓
+Testing Text Log on Good network... ✓
+Testing Text Log on Patchy network... ✓
+Testing Text Log on Bad network... ✓
+Testing Image PNG on Excellent network... ✓
+Testing Image PNG on Good network... ✓
+Testing Image PNG on Patchy network... ✓
+Testing Image PNG on Bad network... ✓
+Testing CSV Data on Excellent network... ✓
+Testing CSV Data on Good network... ✓
+Testing CSV Data on Patchy network... ✓
+Testing CSV Data on Bad network... ✓
+
+╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                    SYSTEM BENCHMARK RESULTS MATRIX                                              ║
+╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ Format       │ Network      │ Route      │ Latency(ms) │ Throughput │ Loss(%)  │ Jitter   │ Bytes Sent │ Bytes Recv │ Success ║
+╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ JSON Small   │ Excellent    │ WiFi       │ 0.60       │ 1000.00    │ 0.01     │ 1.00     │ 64         │ 64         │ ✓      ║
+║ JSON Small   │ Good         │ Starlink   │ 0.24       │ 100.00     │ 0.10     │ 5.00     │ 64         │ 64         │ ✓      ║
+║ JSON Small   │ Patchy       │ WiFi       │ 0.76       │ 10.00      │ 5.00     │ 50.00    │ 64         │ 61         │ ✓      ║
+║ JSON Small   │ Bad          │ WiFi       │ 0.48       │ 2.00       │ 15.00    │ 100.00   │ 64         │ 55         │ ✓      ║
+║ JSON Large   │ Excellent    │ WiFi       │ 0.72       │ 1000.00    │ 0.01     │ 1.00     │ 62805      │ 62799      │ ✓      ║
+║ JSON Large   │ Good         │ Starlink   │ 5.01       │ 100.00     │ 0.10     │ 5.00     │ 62805      │ 62743      │ ✓      ║
+║ JSON Large   │ Patchy       │ WiFi       │ 48.42      │ 10.00      │ 5.00     │ 50.00    │ 62805      │ 59665      │ ✓      ║
+║ JSON Large   │ Bad          │ WiFi       │ 239.82     │ 2.00       │ 15.00    │ 100.00   │ 62805      │ 53385      │ ✓      ║
+║ Binary 1KB   │ Excellent    │ WiFi       │ 0.24       │ 1000.00    │ 0.01     │ 1.00     │ 1024       │ 1024       │ ✓      ║
+║ Binary 1KB   │ Good         │ Starlink   │ 0.28       │ 100.00     │ 0.10     │ 5.00     │ 1024       │ 1023       │ ✓      ║
+║ Binary 1KB   │ Patchy       │ WiFi       │ 0.97       │ 10.00      │ 5.00     │ 50.00    │ 1024       │ 973        │ ✓      ║
+║ Binary 1KB   │ Bad          │ WiFi       │ 4.09       │ 2.00       │ 15.00    │ 100.00   │ 1024       │ 871        │ ✓      ║
+║ Binary 10KB  │ Excellent    │ WiFi       │ 0.26       │ 1000.00    │ 0.01     │ 1.00     │ 10240      │ 10239      │ ✓      ║
+║ Binary 10KB  │ Good         │ Starlink   │ 0.97       │ 100.00     │ 0.10     │ 5.00     │ 10240      │ 10230      │ ✓      ║
+║ Binary 10KB  │ Patchy       │ WiFi       │ 7.98       │ 10.00      │ 5.00     │ 50.00    │ 10240      │ 9728       │ ✓      ║
+║ Binary 10KB  │ Bad          │ WiFi       │ 39.26      │ 2.00       │ 15.00    │ 100.00   │ 10240      │ 8704       │ ✓      ║
+║ Binary 100KB │ Excellent    │ WiFi       │ 0.95       │ 1000.00    │ 0.01     │ 1.00     │ 102400     │ 102390     │ ✓      ║
+║ Binary 100KB │ Good         │ Starlink   │ 8.00       │ 100.00     │ 0.10     │ 5.00     │ 102400     │ 102298     │ ✓      ║
+║ Binary 100KB │ Patchy       │ WiFi       │ 78.31      │ 10.00      │ 5.00     │ 50.00    │ 102400     │ 97280      │ ✓      ║
+║ Binary 100KB │ Bad          │ WiFi       │ 390.80     │ 2.00       │ 15.00    │ 100.00   │ 102400     │ 87040      │ ✓      ║
+║ Text Log     │ Excellent    │ WiFi       │ 0.21       │ 1000.00    │ 0.01     │ 1.00     │ 229        │ 229        │ ✓      ║
+║ Text Log     │ Good         │ Starlink   │ 0.21       │ 100.00     │ 0.10     │ 5.00     │ 229        │ 229        │ ✓      ║
+║ Text Log     │ Patchy       │ WiFi       │ 0.37       │ 10.00      │ 5.00     │ 50.00    │ 229        │ 218        │ ✓      ║
+║ Text Log     │ Bad          │ WiFi       │ 1.07       │ 2.00       │ 15.00    │ 100.00   │ 229        │ 195        │ ✓      ║
+║ Image PNG    │ Excellent    │ WiFi       │ 0.22       │ 1000.00    │ 0.01     │ 1.00     │ 45         │ 45         │ ✓      ║
+║ Image PNG    │ Good         │ Starlink   │ 0.21       │ 100.00     │ 0.10     │ 5.00     │ 45         │ 45         │ ✓      ║
+║ Image PNG    │ Patchy       │ WiFi       │ 0.28       │ 10.00      │ 5.00     │ 50.00    │ 45         │ 43         │ ✓      ║
+║ Image PNG    │ Bad          │ WiFi       │ 0.39       │ 2.00       │ 15.00    │ 100.00   │ 45         │ 39         │ ✓      ║
+║ CSV Data     │ Excellent    │ WiFi       │ 0.35       │ 1000.00    │ 0.01     │ 1.00     │ 122        │ 122        │ ✓      ║
+║ CSV Data     │ Good         │ Starlink   │ 0.25       │ 100.00     │ 0.10     │ 5.00     │ 122        │ 122        │ ✓      ║
+║ CSV Data     │ Patchy       │ WiFi       │ 0.33       │ 10.00      │ 5.00     │ 50.00    │ 122        │ 116        │ ✓      ║
+║ CSV Data     │ Bad          │ WiFi       │ 0.72       │ 2.00       │ 15.00    │ 100.00   │ 122        │ 104        │ ✓      ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                          SUMMARY STATISTICS                                                      ║
+╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ Total Tests:            32                                                                                      ║
+║ Successful:             32 (100.0%)                                                                              ║
+║ Failed:                  0 (0.0%)                                                                              ║
+╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ Latency (ms):                                                                                                   ║
+║   Average:                26.02                                                                                      ║
+║   Minimum:                0.21                                                                                      ║
+║   Maximum:              390.80                                                                                      ║
+╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ Throughput (Mbps):                                                                                              ║
+║   Average:              278.00                                                                                      ║
+╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ Loss Rate:                5.03%                                                                                    ║
+║ Compression Ratio:        0.98                                                                                      ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+✅ Benchmark Complete!

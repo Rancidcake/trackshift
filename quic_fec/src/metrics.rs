@@ -5,7 +5,6 @@
 use serde::{Serialize, Deserialize};
 use std::sync::Arc;
 use parking_lot::RwLock;
-use std::time::Instant;
 use std::collections::HashMap;
 
 use crate::handover::NetworkPath;

@@ -11,8 +11,10 @@ pub mod api;
 pub mod metrics;
 pub mod server;
 pub mod integration;
+pub mod control;
 
 pub use server::DashboardServer;
 pub use metrics::{SystemMetrics, MetricsCollector};
 pub use integration::{update_dashboard_metrics, CompressionStats, PerformanceStats};
+pub use control::{DashboardController, DashboardState, SystemConfig, NetworkSettings, PerformanceMetrics, SystemHealth};
 

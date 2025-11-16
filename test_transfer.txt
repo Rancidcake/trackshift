@@ -1,0 +1,10 @@
+This is a test file for PitlinkPQC file transfer system.
+It contains multiple lines to test chunking and transfer.
+
+Line 1: Testing file transfer functionality
+Line 2: Testing chunk-based transfer
+Line 3: Testing integrity verification
+Line 4: Testing progress tracking
+Line 5: Testing fallback system
+
+The system should handle this file transfer smoothly.

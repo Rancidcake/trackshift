@@ -11,7 +11,7 @@ use std::sync::Arc;
 use parking_lot::RwLock;
 use reed_solomon_erasure::{ReedSolomon, galois_8::Field};
 
-use crate::fec::{FecConfig, FecEncoder, FecDecoder};
+use crate::fec::FecConfig;
 
 /// FEC algorithm type
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PitlinkPQC Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -19,470 +18,670 @@
             min-height: 100vh;
             padding: 20px;
         }
-
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-
+        
         header {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-
+        
         h1 {
             color: #667eea;
             margin-bottom: 10px;
         }
-
-        .status-bar {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        
         .status-indicator {
+            display: inline-block;
             width: 12px;
             height: 12px;
             border-radius: 50%;
             background: #4caf50;
+            margin-right: 8px;
             animation: pulse 2s infinite;
         }
-
-        .status-indicator.disconnected {
-            background: #f44336;
-        }
-
+        
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-
-        .dashboard-grid {
+        
+        .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
-
+        
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-
+        
         .card h2 {
             color: #667eea;
             margin-bottom: 15px;
             font-size: 1.2em;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
         }
-
-        .metric {
+        
+        .stat {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #eee;
         }
-
-        .metric:last-child {
+        
+        .stat:last-child {
             border-bottom: none;
         }
-
-        .metric-label {
+        
+        .stat-label {
             color: #666;
-            font-weight: 500;
         }
-
-        .metric-value {
+        
+        .stat-value {
+            font-weight: bold;
             color: #333;
-            font-weight: bold;
         }
-
-        .metric-value.good {
-            color: #4caf50;
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
         }
-
-        .metric-value.warning {
-            color: #ff9800;
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
         }
-
-        .metric-value.bad {
-            color: #f44336;
+        
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s;
         }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-top: 15px;
+        
+        .button:hover {
+            background: #5568d3;
         }
-
-        .network-path {
+        
+        .button-danger {
+            background: #f44336;
+        }
+        
+        .button-danger:hover {
+            background: #d32f2f;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        
+        .config-section {
+            margin: 15px 0;
+        }
+        
+        .config-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        
+        .transfer-item {
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .transfer-item h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin: 2px;
         }
-
-        .path-wifi { background: #e3f2fd; color: #1976d2; }
-        .path-5g { background: #f3e5f5; color: #7b1fa2; }
-        .path-starlink { background: #fff3e0; color: #e65100; }
-        .path-multipath { background: #e8f5e9; color: #388e3c; }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
+        
+        .badge-critical { background: #f44336; color: white; }
+        .badge-high { background: #ff9800; color: white; }
+        .badge-normal { background: #2196f3; color: white; }
+        .badge-low { background: #9e9e9e; color: white; }
+        .badge-bulk { background: #607d8b; color: white; }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
             color: #666;
+            font-size: 16px;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🚀 PitlinkPQC Dashboard</h1>
-            <p>Real-time monitoring of telemetry AI, QUIC-FEC, and network metrics</p>
-            <div class="status-bar">
-                <div class="status-item">
-                    <div class="status-indicator" id="connection-status"></div>
-                    <span>Connection: <span id="connection-text">Checking...</span></span>
-                </div>
-                <div class="status-item">
-                    <span>Last Update: <span id="last-update">Never</span></span>
-                </div>
-                <div class="status-item">
-                    <span>Uptime: <span id="uptime">0s</span></span>
-                </div>
-            </div>
+            <h1><span class="status-indicator"></span>PitlinkPQC Dashboard</h1>
+            <p>Real-time telemetry monitoring and control</p>
         </header>
-
-        <div class="dashboard-grid">
-            <!-- Network Metrics -->
-            <div class="card">
-                <h2>📡 Network Metrics</h2>
-                <div class="metric">
-                    <span class="metric-label">Current Path:</span>
-                    <span class="metric-value" id="current-path">-</span>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">Overview</button>
+            <button class="tab" onclick="showTab('transfers')">Transfers</button>
+            <button class="tab" onclick="showTab('config')">Configuration</button>
+            <button class="tab" onclick="showTab('methods')">Methods</button>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h2>System Health</h2>
+                    <div class="stat">
+                        <span class="stat-label">Active Transfers</span>
+                        <span class="stat-value" id="active-transfers">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Queue Size</span>
+                        <span class="stat-value" id="queue-size">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Error Rate</span>
+                        <span class="stat-value" id="error-rate">0%</span>
+                    </div>
                 </div>
-                <div class="metric">
-                    <span class="metric-label">RTT:</span>
-                    <span class="metric-value" id="rtt">-</span>
+                
+                <div class="card">
+                    <h2>Network Status</h2>
+                    <div class="stat">
+                        <span class="stat-label">RTT</span>
+                        <span class="stat-value" id="rtt">- ms</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Throughput</span>
+                        <span class="stat-value" id="throughput">- Mbps</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Quality Score</span>
+                        <span class="stat-value" id="quality">-</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Status</span>
+                        <span class="stat-value" id="network-status">-</span>
+                    </div>
                 </div>
-                <div class="metric">
-                    <span class="metric-label">Jitter:</span>
-                    <span class="metric-value" id="jitter">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Packet Loss:</span>
-                    <span class="metric-value" id="loss-rate">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Throughput:</span>
-                    <span class="metric-value" id="throughput">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">WiFi Signal:</span>
-                    <span class="metric-value" id="wifi-signal">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Network Quality:</span>
-                    <span class="metric-value" id="network-quality">-</span>
-                </div>
-            </div>
-
-            <!-- AI Decisions -->
-            <div class="card">
-                <h2>🧠 AI Decisions</h2>
-                <div class="metric">
-                    <span class="metric-label">Route:</span>
-                    <span class="metric-value" id="ai-route">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Severity:</span>
-                    <span class="metric-value" id="ai-severity">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Should Send:</span>
-                    <span class="metric-value" id="should-send">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Similarity Score:</span>
-                    <span class="metric-value" id="similarity">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Optimization:</span>
-                    <span class="metric-value" id="optimization">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Congestion Predicted:</span>
-                    <span class="metric-value" id="congestion">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">WFQ Weights (P0/P1/P2):</span>
-                    <span class="metric-value" id="wfq-weights">-</span>
-                </div>
-            </div>
-
-            <!-- QUIC-FEC -->
-            <div class="card">
-                <h2>🔐 QUIC-FEC</h2>
-                <div class="metric">
-                    <span class="metric-label">Connected:</span>
-                    <span class="metric-value" id="quic-connected">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">FEC Enabled:</span>
-                    <span class="metric-value" id="fec-enabled">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Packets Sent:</span>
-                    <span class="metric-value" id="packets-sent">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Packets Received:</span>
-                    <span class="metric-value" id="packets-received">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Packets Recovered:</span>
-                    <span class="metric-value" id="packets-recovered">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Handovers:</span>
-                    <span class="metric-value" id="handovers">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">FEC Config:</span>
-                    <span class="metric-value" id="fec-config">-</span>
-                </div>
-            </div>
-
-            <!-- Compression -->
-            <div class="card">
-                <h2>🗜️ Compression</h2>
-                <div class="metric">
-                    <span class="metric-label">Compression Ratio:</span>
-                    <span class="metric-value" id="compression-ratio">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">LZ4 Count:</span>
-                    <span class="metric-value" id="lz4-count">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Zstd Count:</span>
-                    <span class="metric-value" id="zstd-count">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Total Compressed:</span>
-                    <span class="metric-value" id="total-compressed">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Total Uncompressed:</span>
-                    <span class="metric-value" id="total-uncompressed">-</span>
-                </div>
-            </div>
-
-            <!-- Performance -->
-            <div class="card">
-                <h2>⚡ Performance</h2>
-                <div class="metric">
-                    <span class="metric-label">Chunks Processed:</span>
-                    <span class="metric-value" id="chunks-processed">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Avg Processing Time:</span>
-                    <span class="metric-value" id="avg-processing">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">AI Inference Time:</span>
-                    <span class="metric-value" id="ai-inference">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Bytes Sent:</span>
-                    <span class="metric-value" id="bytes-sent">-</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Bytes Received:</span>
-                    <span class="metric-value" id="bytes-received">-</span>
+                
+                <div class="card">
+                    <h2>Scheduler Stats</h2>
+                    <div class="stat">
+                        <span class="stat-label">Critical Queue</span>
+                        <span class="stat-value" id="critical-queue">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">High Queue</span>
+                        <span class="stat-value" id="high-queue">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Normal Queue</span>
+                        <span class="stat-value" id="normal-queue">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Total Scheduled</span>
+                        <span class="stat-value" id="total-scheduled">0</span>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Charts -->
-        <div class="card" style="margin-top: 20px;">
-            <h2>📈 Network Quality Over Time</h2>
-            <div class="chart-container">
-                <canvas id="network-chart"></canvas>
+        
+        <!-- Transfers Tab -->
+        <div id="transfers" class="tab-content">
+            <div class="card">
+                <h2>Active Transfers</h2>
+                <div id="transfers-list"></div>
+            </div>
+            
+            <div class="card">
+                <h2>Start New Transfer</h2>
+                <div class="config-section">
+                    <label>Data (Base64 encoded):</label>
+                    <textarea id="transfer-data" rows="3" placeholder="Enter data or base64 string"></textarea>
+                </div>
+                <div class="config-section">
+                    <label>Priority:</label>
+                    <select id="transfer-priority">
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Normal" selected>Normal</option>
+                        <option value="Low">Low</option>
+                        <option value="Bulk">Bulk</option>
+                    </select>
+                </div>
+                <button class="button" onclick="startTransfer()">Start Transfer</button>
+            </div>
+        </div>
+        
+        <!-- Configuration Tab -->
+        <div id="config" class="tab-content">
+            <div class="card">
+                <h2>Compression Settings</h2>
+                <div class="config-section">
+                    <label>
+                        <input type="checkbox" id="compression-enabled" checked>
+                        Enable Compression
+                    </label>
+                </div>
+                <div class="config-section">
+                    <label>Algorithm:</label>
+                    <select id="compression-algorithm">
+                        <option value="Auto" selected>Auto</option>
+                        <option value="Lz4">LZ4</option>
+                        <option value="Zstd">Zstd</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Integrity Settings</h2>
+                <div class="config-section">
+                    <label>
+                        <input type="checkbox" id="integrity-enabled" checked>
+                        Enable Integrity Checks
+                    </label>
+                </div>
+                <div class="config-section">
+                    <label>Method:</label>
+                    <select id="integrity-method">
+                        <option value="Blake3" selected>Blake3 (Recommended)</option>
+                        <option value="SHA256">SHA256</option>
+                        <option value="CRC32">CRC32</option>
+                        <option value="Checksum">Checksum</option>
+                        <option value="None">None</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Routing Settings</h2>
+                <div class="config-section">
+                    <label>Default Route:</label>
+                    <select id="default-route">
+                        <option value="WiFi" selected>WiFi</option>
+                        <option value="Starlink">Starlink</option>
+                        <option value="Multipath">Multipath</option>
+                    </select>
+                </div>
+                <div class="config-section">
+                    <label>
+                        <input type="checkbox" id="enable-multipath">
+                        Enable Multipath
+                    </label>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Priority Weights (WFQ)</h2>
+                <div class="config-section">
+                    <label>P0 Weight (Critical/High):</label>
+                    <input type="number" id="p0-weight" value="50" min="0" max="100">
+                </div>
+                <div class="config-section">
+                    <label>P1 Weight (Normal):</label>
+                    <input type="number" id="p1-weight" value="30" min="0" max="100">
+                </div>
+                <div class="config-section">
+                    <label>P2 Weight (Low/Bulk):</label>
+                    <input type="number" id="p2-weight" value="20" min="0" max="100">
+                </div>
+                <div class="config-section">
+                    <label>
+                        <input type="checkbox" id="p2-enabled" checked>
+                        Enable P2 (Bulk Transfers)
+                    </label>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>FEC Settings</h2>
+                <div class="config-section">
+                    <label>
+                        <input type="checkbox" id="fec-enabled" checked>
+                        Enable Forward Error Correction
+                    </label>
+                </div>
+                <div class="config-section">
+                    <label>Redundancy (%):</label>
+                    <input type="number" id="fec-redundancy" value="30" min="0" max="100">
+                </div>
+            </div>
+            
+            <button class="button" onclick="saveConfig()">Save Configuration</button>
+        </div>
+        
+        <!-- Methods Tab -->
+        <div id="methods" class="tab-content">
+            <div class="card">
+                <h2>Available Methods</h2>
+                <div class="config-section">
+                    <h3>Compression Algorithms</h3>
+                    <ul>
+                        <li><strong>LZ4:</strong> Fast compression, lower ratio</li>
+                        <li><strong>Zstd:</strong> Balanced compression, better ratio</li>
+                        <li><strong>Auto:</strong> AI-driven selection</li>
+                    </ul>
+                </div>
+                <div class="config-section">
+                    <h3>Integrity Methods</h3>
+                    <ul>
+                        <li><strong>Blake3:</strong> Fast and secure (Recommended)</li>
+                        <li><strong>SHA256:</strong> Strong integrity</li>
+                        <li><strong>CRC32:</strong> Balanced for large files</li>
+                        <li><strong>Checksum:</strong> Fast for small files</li>
+                    </ul>
+                </div>
+                <div class="config-section">
+                    <h3>Routing Options</h3>
+                    <ul>
+                        <li><strong>WiFi:</strong> Standard WiFi connection</li>
+                        <li><strong>Starlink:</strong> Satellite internet</li>
+                        <li><strong>Multipath:</strong> Multiple paths simultaneously</li>
+                    </ul>
+                </div>
+                <div class="config-section">
+                    <h3>Priority Levels</h3>
+                    <ul>
+                        <li><strong>Critical:</strong> Emergency, immediate action</li>
+                        <li><strong>High:</strong> Important, time-sensitive</li>
+                        <li><strong>Normal:</strong> Standard priority</li>
+                        <li><strong>Low:</strong> Background, can be delayed</li>
+                        <li><strong>Bulk:</strong> Bulk transfers, lowest priority</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Chart setup
-        const ctx = document.getElementById('network-chart').getContext('2d');
-        const networkChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Network Quality Score',
-                    data: [],
-                    borderColor: 'rgb(102, 126, 234)',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    tension: 0.4
-                }, {
-                    label: 'RTT (ms)',
-                    data: [],
-                    borderColor: 'rgb(255, 152, 0)',
-                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 1.0
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Update dashboard
-        async function updateDashboard() {
+        let updateInterval;
+        
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        async function fetchStatus() {
             try {
-                const response = await fetch('/api/metrics/current');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const metrics = await response.json();
-
-                // Update connection status
-                const connected = metrics.quic_fec.connected;
-                document.getElementById('connection-status').className = 
-                    'status-indicator' + (connected ? '' : ' disconnected');
-                document.getElementById('connection-text').textContent = 
-                    connected ? 'Connected' : 'Disconnected';
-
-                // Update timestamp
-                const timestamp = new Date(metrics.timestamp);
-                document.getElementById('last-update').textContent = 
-                    timestamp.toLocaleTimeString();
-
-                // Update uptime
-                const uptime = metrics.performance.uptime_seconds;
-                const hours = Math.floor(uptime / 3600);
-                const minutes = Math.floor((uptime % 3600) / 60);
-                const seconds = uptime % 60;
-                document.getElementById('uptime').textContent = 
-                    `${hours}h ${minutes}m ${seconds}s`;
-
-                // Network metrics
-                document.getElementById('current-path').innerHTML = 
-                    `<span class="network-path path-${metrics.network.current_path.toLowerCase()}">${metrics.network.current_path}</span>`;
-                document.getElementById('rtt').textContent = `${metrics.network.rtt_ms.toFixed(1)} ms`;
-                document.getElementById('jitter').textContent = `${metrics.network.jitter_ms.toFixed(2)} ms`;
-                document.getElementById('loss-rate').textContent = `${(metrics.network.loss_rate * 100).toFixed(2)}%`;
-                document.getElementById('throughput').textContent = `${metrics.network.throughput_mbps.toFixed(1)} Mbps`;
-                document.getElementById('wifi-signal').textContent = `${metrics.network.wifi_signal.toFixed(1)} dBm`;
+                const response = await fetch('/api/status');
+                const data = await response.json();
                 
-                const quality = metrics.network.network_quality_score;
-                const qualityEl = document.getElementById('network-quality');
-                qualityEl.textContent = `${(quality * 100).toFixed(1)}%`;
-                qualityEl.className = 'metric-value ' + 
-                    (quality > 0.7 ? 'good' : quality > 0.4 ? 'warning' : 'bad');
-
-                // AI decisions
-                document.getElementById('ai-route').textContent = metrics.ai_decision.route;
-                document.getElementById('ai-severity').textContent = metrics.ai_decision.severity;
-                document.getElementById('should-send').textContent = metrics.ai_decision.should_send ? 'Yes' : 'No';
-                document.getElementById('similarity').textContent = `${(metrics.ai_decision.similarity_score * 100).toFixed(1)}%`;
-                document.getElementById('optimization').textContent = metrics.ai_decision.optimization_hint;
-                document.getElementById('congestion').textContent = metrics.ai_decision.congestion_predicted ? 'Yes' : 'No';
-                document.getElementById('wfq-weights').textContent = 
-                    `${metrics.ai_decision.wfq_weights.p0}/${metrics.ai_decision.wfq_weights.p1}/${metrics.ai_decision.wfq_weights.p2}`;
-
-                // QUIC-FEC
-                document.getElementById('quic-connected').textContent = metrics.quic_fec.connected ? 'Yes' : 'No';
-                document.getElementById('fec-enabled').textContent = metrics.quic_fec.fec_enabled ? 'Yes' : 'No';
-                document.getElementById('packets-sent').textContent = metrics.quic_fec.packets_sent.toLocaleString();
-                document.getElementById('packets-received').textContent = metrics.quic_fec.packets_received.toLocaleString();
-                document.getElementById('packets-recovered').textContent = metrics.quic_fec.packets_recovered.toLocaleString();
-                document.getElementById('handovers').textContent = metrics.quic_fec.handover_count;
-                document.getElementById('fec-config').textContent = 
-                    `${metrics.quic_fec.fec_config.data_shards}/${metrics.quic_fec.fec_config.parity_shards} (${metrics.quic_fec.fec_config.redundancy_percent.toFixed(1)}%)`;
-
-                // Compression
-                document.getElementById('compression-ratio').textContent = 
-                    metrics.compression.compression_ratio > 0 ? 
-                    `${(metrics.compression.compression_ratio * 100).toFixed(1)}%` : '-';
-                document.getElementById('lz4-count').textContent = metrics.compression.lz4_count.toLocaleString();
-                document.getElementById('zstd-count').textContent = metrics.compression.zstd_count.toLocaleString();
-                document.getElementById('total-compressed').textContent = formatBytes(metrics.compression.total_compressed);
-                document.getElementById('total-uncompressed').textContent = formatBytes(metrics.compression.total_uncompressed);
-
-                // Performance
-                document.getElementById('chunks-processed').textContent = metrics.performance.chunks_processed.toLocaleString();
-                document.getElementById('avg-processing').textContent = `${metrics.performance.avg_processing_time_ms.toFixed(2)} ms`;
-                document.getElementById('ai-inference').textContent = `${metrics.performance.ai_inference_time_ms.toFixed(2)} ms`;
-                document.getElementById('bytes-sent').textContent = formatBytes(metrics.performance.total_bytes_sent);
-                document.getElementById('bytes-received').textContent = formatBytes(metrics.performance.total_bytes_received);
-
-                // Update chart
-                const now = new Date().toLocaleTimeString();
-                networkChart.data.labels.push(now);
-                networkChart.data.datasets[0].data.push(quality);
-                networkChart.data.datasets[1].data.push(metrics.network.rtt_ms);
+                // Update overview
+                document.getElementById('active-transfers').textContent = data.active_transfers || 0;
+                document.getElementById('queue-size').textContent = data.queue_size || 0;
+                document.getElementById('error-rate').textContent = 
+                    ((data.error_rate || 0) * 100).toFixed(1) + '%';
                 
-                // Keep last 20 points
-                if (networkChart.data.labels.length > 20) {
-                    networkChart.data.labels.shift();
-                    networkChart.data.datasets[0].data.shift();
-                    networkChart.data.datasets[1].data.shift();
+                if (data.scheduler) {
+                    document.getElementById('critical-queue').textContent = data.scheduler.critical_queue || 0;
+                    document.getElementById('high-queue').textContent = data.scheduler.high_queue || 0;
+                    document.getElementById('normal-queue').textContent = data.scheduler.normal_queue || 0;
+                    document.getElementById('total-scheduled').textContent = data.scheduler.total_scheduled || 0;
                 }
                 
-                networkChart.update('none');
-
+                // Only show real network data - no fake values
+                if (data.network) {
+                    const rtt = data.network.rtt_ms;
+                    const throughput = data.network.throughput_mbps;
+                    const quality = data.network.quality_score;
+                    
+                    document.getElementById('rtt').textContent = 
+                        (rtt !== null && rtt !== undefined && !isNaN(rtt)) ? rtt.toFixed(1) + ' ms' : '- ms';
+                    document.getElementById('throughput').textContent = 
+                        (throughput !== null && throughput !== undefined && !isNaN(throughput)) ? throughput.toFixed(2) + ' Mbps' : '- Mbps';
+                    document.getElementById('quality').textContent = 
+                        (quality !== null && quality !== undefined && !isNaN(quality)) ? (quality * 100).toFixed(1) + '%' : '-';
+                    document.getElementById('network-status').textContent = 
+                        (data.network.is_patchy !== null && data.network.is_patchy !== undefined) 
+                            ? (data.network.is_patchy ? 'Patchy' : 'Good') : 'No data';
+                } else {
+                    // No network data available
+                    document.getElementById('rtt').textContent = '- ms';
+                    document.getElementById('throughput').textContent = '- Mbps';
+                    document.getElementById('quality').textContent = '-';
+                    document.getElementById('network-status').textContent = 'No data';
+                }
             } catch (error) {
-                console.error('Error updating dashboard:', error);
-                // Show connection error
-                document.getElementById('connection-status').className = 'status-indicator disconnected';
-                document.getElementById('connection-text').textContent = 'Error: ' + error.message;
+                console.error('Error fetching status:', error);
             }
         }
-
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        
+        async function fetchTransfers() {
+            try {
+                const response = await fetch('/api/transfers');
+                const data = await response.json();
+                
+                const list = document.getElementById('transfers-list');
+                list.innerHTML = '';
+                
+                if (data.transfers && data.transfers.length > 0) {
+                    data.transfers.forEach(transfer => {
+                        const item = document.createElement('div');
+                        item.className = 'transfer-item';
+                        
+                        const priority = transfer.priority || 'Normal';
+                        const priorityClass = 'badge-' + priority.toLowerCase();
+                        const progress = transfer.progress || 0;
+                        const speed = transfer.speed_mbps || 0;
+                        const bytesTransferred = transfer.bytes_transferred || 0;
+                        const totalBytes = transfer.total_bytes || 0;
+                        
+                        item.innerHTML = `
+                            <h4>${transfer.id || 'Unknown'}</h4>
+                            <div>
+                                <span class="badge ${priorityClass}">${priority}</span>
+                                <span class="badge">${transfer.status || 'Unknown'}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress * 100}%"></div>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Progress</span>
+                                <span class="stat-value">${(progress * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Speed</span>
+                                <span class="stat-value">${speed > 0 ? speed.toFixed(2) + ' Mbps' : 'Calculating...'}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Bytes</span>
+                                <span class="stat-value">${bytesTransferred.toLocaleString()} / ${totalBytes.toLocaleString()}</span>
+                            </div>
+                            ${transfer.route ? `<div class="stat"><span class="stat-label">Route</span><span class="stat-value">${transfer.route}</span></div>` : ''}
+                            ${transfer.integrity_method ? `<div class="stat"><span class="stat-label">Integrity</span><span class="stat-value">${transfer.integrity_method}</span></div>` : ''}
+                            <button class="button button-danger" onclick="stopTransfer('${transfer.id}')">Stop</button>
+                        `;
+                        list.appendChild(item);
+                    });
+                } else {
+                    list.innerHTML = '<p>No active transfers</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching transfers:', error);
+            }
         }
-
-        // Update every second
-        updateDashboard();
-        setInterval(updateDashboard, 1000);
+        
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                document.getElementById('compression-enabled').checked = config.compression_enabled;
+                document.getElementById('compression-algorithm').value = config.compression_algorithm;
+                document.getElementById('integrity-enabled').checked = config.integrity_enabled;
+                document.getElementById('integrity-method').value = config.integrity_method;
+                document.getElementById('default-route').value = config.default_route;
+                document.getElementById('enable-multipath').checked = config.enable_multipath;
+                document.getElementById('p0-weight').value = config.p0_weight;
+                document.getElementById('p1-weight').value = config.p1_weight;
+                document.getElementById('p2-weight').value = config.p2_weight;
+                document.getElementById('p2-enabled').checked = config.p2_enabled;
+                document.getElementById('fec-enabled').checked = config.fec_enabled;
+                document.getElementById('fec-redundancy').value = config.fec_redundancy;
+            } catch (error) {
+                console.error('Error loading config:', error);
+            }
+        }
+        
+        async function saveConfig() {
+            const config = {
+                compression_enabled: document.getElementById('compression-enabled').checked,
+                compression_algorithm: document.getElementById('compression-algorithm').value,
+                integrity_enabled: document.getElementById('integrity-enabled').checked,
+                integrity_method: document.getElementById('integrity-method').value,
+                default_route: document.getElementById('default-route').value,
+                enable_multipath: document.getElementById('enable-multipath').checked,
+                p0_weight: parseInt(document.getElementById('p0-weight').value),
+                p1_weight: parseInt(document.getElementById('p1-weight').value),
+                p2_weight: parseInt(document.getElementById('p2-weight').value),
+                p2_enabled: document.getElementById('p2-enabled').checked,
+                fec_enabled: document.getElementById('fec-enabled').checked,
+                fec_redundancy: parseInt(document.getElementById('fec-redundancy').value),
+            };
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config),
+                });
+                
+                const result = await response.json();
+                alert('Configuration saved!');
+            } catch (error) {
+                console.error('Error saving config:', error);
+                alert('Error saving configuration');
+            }
+        }
+        
+        async function startTransfer() {
+            const data = document.getElementById('transfer-data').value;
+            const priority = document.getElementById('transfer-priority').value;
+            
+            // Convert to base64 if needed
+            let base64Data;
+            try {
+                base64Data = btoa(data);
+            } catch (e) {
+                base64Data = data; // Assume already base64
+            }
+            
+            const request = {
+                action: 'start_transfer',
+                priority: priority,
+                data: base64Data,
+            };
+            
+            try {
+                const response = await fetch('/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request),
+                });
+                
+                const result = await response.json();
+                alert('Transfer started: ' + result.transfer_id);
+                document.getElementById('transfer-data').value = '';
+                fetchTransfers();
+            } catch (error) {
+                console.error('Error starting transfer:', error);
+                alert('Error starting transfer');
+            }
+        }
+        
+        async function stopTransfer(transferId) {
+            const request = {
+                action: 'stop_transfer',
+                transfer_id: transferId,
+            };
+            
+            try {
+                const response = await fetch('/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request),
+                });
+                
+                fetchTransfers();
+            } catch (error) {
+                console.error('Error stopping transfer:', error);
+            }
+        }
+        
+        // Initialize
+        loadConfig();
+        fetchStatus();
+        fetchTransfers();
+        
+        // Auto-refresh
+        updateInterval = setInterval(() => {
+            fetchStatus();
+            if (document.getElementById('transfers').classList.contains('active')) {
+                fetchTransfers();
+            }
+        }, 2000);
     </script>
 </body>
 </html>
-

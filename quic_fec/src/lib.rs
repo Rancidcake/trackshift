@@ -18,6 +18,13 @@ mod fec_enhanced;
 mod handover_enhanced;
 mod receiver;
 mod metrics;
+mod server;
+mod protocol;
+mod file_transfer;
+mod session;
+mod auth;
+mod file_client;
+mod fallback;
 
 pub use fec::{FecEncoder, FecDecoder, FecConfig};
 pub use connection::{QuicFecConnection, ConnectionConfig, ConnectionState};
@@ -31,6 +38,15 @@ pub use fec_enhanced::{EnhancedFecEncoder, EnhancedFecDecoder, FecAlgorithm, Fec
 pub use handover_enhanced::{EnhancedHandoverManager, HandoverEvent, HandoverReason};
 pub use receiver::{QuicReceiver, ReceiverStats};
 pub use metrics::{MultipathMetrics, MetricsEmitter};
+
+// Server and client exports
+pub use server::QuicFecServer;
+pub use protocol::{ClientMessage, ServerMessage, ConnectRequest, StartTransferRequest, ChunkData};
+pub use file_client::{FileTransferClient, ClientTransfer, TransferStatus, ProgressUpdate};
+pub use file_transfer::{FileTransferHandler, FileTransferRequest, ActiveTransfer};
+pub use session::{SessionManager, Session};
+pub use auth::{AuthManager, AuthResult, Permissions, RateLimits};
+pub use fallback::{FallbackManager, FallbackStrategy, SystemState, FallbackConfig, FallbackStats, FallbackEvent, FallbackReason};
 
 use anyhow::Result;
 
